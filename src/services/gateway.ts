@@ -16,7 +16,7 @@ export class GatewayService extends BaseService {
 	 * Check card information and available credit types
 	 */
 	async information(
-		payload: GatewayInformationRequest,
+		payload: GatewayInformationRequest | Record<string, unknown>,
 		options?: MethodOptions,
 	): Promise<GatewayInformationResponse> {
 		if (!options?.raw) {
@@ -32,7 +32,7 @@ export class GatewayService extends BaseService {
 	 * Process a direct transaction (Card or Token)
 	 */
 	async process(
-		payload: GatewayProcessRequest,
+		payload: GatewayProcessRequest | Record<string, unknown>,
 		options?: MethodOptions,
 	): Promise<GatewayTransactionResponse> {
 		if (!options?.raw) {
@@ -42,14 +42,19 @@ export class GatewayService extends BaseService {
 			"/gateway/process",
 			payload,
 		);
-		return GatewayTransactionResponseSchema.parse(response);
+
+		if (!options?.raw) {
+			return GatewayTransactionResponseSchema.parse(response);
+		}
+
+		return response;
 	}
 
 	/**
 	 * Consult a transaction status by its internal reference
 	 */
 	async query(
-		payload: GatewayQueryRequest,
+		payload: GatewayQueryRequest | Record<string, unknown>,
 		options?: MethodOptions,
 	): Promise<GatewayTransactionResponse> {
 		if (!options?.raw) {
@@ -59,6 +64,11 @@ export class GatewayService extends BaseService {
 			"/gateway/query",
 			payload,
 		);
-		return GatewayTransactionResponseSchema.parse(response);
+
+		if (!options?.raw) {
+			return GatewayTransactionResponseSchema.parse(response);
+		}
+
+		return response;
 	}
 }

@@ -12,11 +12,8 @@ import {
 import { BaseService, type MethodOptions } from "./base";
 
 export class CheckoutService extends BaseService {
-	/**
-	 * Generates a new payment session (WebCheckout)
-	 */
 	async createSession(
-		payload: CreateSessionRequest,
+		payload: CreateSessionRequest | Record<string, unknown>,
 		options?: MethodOptions,
 	): Promise<CreateSessionResponse> {
 		if (!options?.raw) {
@@ -26,27 +23,39 @@ export class CheckoutService extends BaseService {
 		return this.http.post<CreateSessionResponse>("/api/session", payload);
 	}
 
-	/**
-	 * Retrieves information about an existing session
-	 */
-	async getSession(requestId: string | number): Promise<RedirectInformation> {
+	async getSession(
+		requestId: string | number,
+		options?: MethodOptions,
+	): Promise<RedirectInformation> {
 		const response = await this.http.post<RedirectInformation>(
 			`/api/session/${requestId}`,
 			{},
 		);
-		return RedirectInformationSchema.parse(response);
+
+		if (!options?.raw) {
+			return RedirectInformationSchema.parse(response);
+		}
+
+		return response;
 	}
 
-	/**
-	 * Performs a payment using a previously tokenized instrument (Server-to-Server)
-	 */
-	async collect(payload: CollectRequest): Promise<CollectResponse> {
-		const data = CollectRequestSchema.parse(payload);
+	async collect(
+		payload: CollectRequest | Record<string, unknown>,
+		options?: MethodOptions,
+	): Promise<CollectResponse> {
+		if (!options?.raw) {
+			CollectRequestSchema.parse(payload);
+		}
+
 		const response = await this.http.post<CollectResponse>(
 			"/api/collect",
-			data,
+			payload,
 		);
 
-		return CollectResponseSchema.parse(response);
+		if (!options?.raw) {
+			return CollectResponseSchema.parse(response);
+		}
+
+		return response;
 	}
 }

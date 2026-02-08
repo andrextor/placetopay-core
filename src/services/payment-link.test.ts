@@ -45,7 +45,7 @@ describe("PaymentLinkService", () => {
 			const result = await service.create(validPayload);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
-				"api/payment-link",
+				"/api/payment-link",
 				validPayload,
 			);
 			expect(result.id).toBe(12345);
@@ -115,7 +115,7 @@ describe("PaymentLinkService", () => {
 			const result = await service.query(linkId);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
-				`api/payment-link/${linkId}`,
+				`/api/payment-link/${linkId}`,
 				{},
 			);
 			expect(result.status).toBe("ACTIVE");
@@ -145,7 +145,7 @@ describe("PaymentLinkService", () => {
 			const result = (await service.disable(linkId)) as typeof mockResponse;
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
-				`api/payment-link/disable/${linkId}`,
+				`/api/payment-link/disable/${linkId}`,
 				{},
 			);
 			expect(result.id).toBe(linkId);
@@ -159,7 +159,7 @@ describe("PaymentLinkService", () => {
 
 			await service.disable(555);
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
-				"api/payment-link/disable/555",
+				"/api/payment-link/disable/555",
 				{},
 			);
 		});

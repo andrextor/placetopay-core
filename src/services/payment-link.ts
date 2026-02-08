@@ -13,7 +13,7 @@ export class PaymentLinkService extends BaseService {
 	 * CREATE: Genera un link de pago nuevo.
 	 */
 	async create(
-		payload: CreatePaymentLinkRequest,
+		payload: CreatePaymentLinkRequest | Record<string, unknown>,
 		options?: MethodOptions,
 	): Promise<CreatePaymentLinkResponse> {
 		if (!options?.raw) {
@@ -21,11 +21,15 @@ export class PaymentLinkService extends BaseService {
 		}
 
 		const response = await this.http.post<CreatePaymentLinkResponse>(
-			"api/payment-link",
+			"/api/payment-link",
 			payload,
 		);
 
-		return CreatePaymentLinkResponseSchema.parse(response);
+		if (!options?.raw) {
+			return CreatePaymentLinkResponseSchema.parse(response);
+		}
+
+		return response;
 	}
 
 	async query(
@@ -33,8 +37,8 @@ export class PaymentLinkService extends BaseService {
 		options?: MethodOptions,
 	): Promise<PaymentLinkQueryResponse> {
 		const response = await this.http.post<PaymentLinkQueryResponse>(
-			`api/payment-link/${linkId}`,
-			{}, // El cuerpo va vacío porque HttpClient inyecta el 'auth' automáticamente
+			`/api/payment-link/${linkId}`,
+			{},
 		);
 
 		if (!options?.raw) {
@@ -48,7 +52,7 @@ export class PaymentLinkService extends BaseService {
 	 */
 	async disable(linkId: string | number): Promise<unknown> {
 		const response = await this.http.post(
-			`api/payment-link/disable/${linkId}`,
+			`/api/payment-link/disable/${linkId}`,
 			{},
 		);
 

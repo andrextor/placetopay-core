@@ -1,48 +1,37 @@
-import { CheckoutService } from "./services/checkout";
-import { GatewayService } from "./services/gateway";
-import { PaymentLinkService } from "./services/payment-link";
-import { HttpClient } from "./utils/http-client";
+// --- 1. Responses ---
 
-export interface PlacetopayConfig {
-	login: string;
-	secretKey: string;
-	baseUrl?: string;
-	timeout?: number;
-}
+export type { PlacetopayConfig } from "./Placetopay";
+export { Placetopay } from "./Placetopay";
+// --- 3. Schemas & Core Class ---
+export * from "./schemas";
 
-export class Placetopay {
-	private readonly http: HttpClient;
+// --- 2. Requests ---
+export type {
+	CollectRequest,
+	CreateSessionRequest,
+} from "./schemas/requests/checkout";
+export type {
+	GatewayInformationRequest,
+	GatewayProcessRequest,
+	GatewayQueryRequest,
+} from "./schemas/requests/gateway";
+export type { CreatePaymentLinkRequest } from "./schemas/requests/payment-link";
+export type {
+	CollectResponse,
+	CreateSessionResponse,
+	RedirectInformation,
+} from "./schemas/responses/checkout";
+export type {
+	GatewayInformationResponse,
+	GatewayTransactionResponse,
+} from "./schemas/responses/gateway";
+export type {
+	CreatePaymentLinkResponse,
+	DisablePaymentLinkResponse,
+	PaymentLinkQueryResponse,
+} from "./schemas/responses/payment-link";
 
-	public readonly checkout: CheckoutService;
-	public readonly gateway: GatewayService;
-	public readonly paymentLink: PaymentLinkService;
-
-	constructor(config: PlacetopayConfig) {
-		const baseUrl = config.baseUrl || "https://checkout-test.placetopay.com";
-
-		this.http = new HttpClient({
-			login: config.login,
-			secretKey: config.secretKey,
-			baseUrl: baseUrl,
-			timeout: config.timeout,
-		});
-
-		this.checkout = new CheckoutService(this.http);
-		this.gateway = new GatewayService(this.http);
-		this.paymentLink = new PaymentLinkService(this.http);
-	}
-
-	/**
-	 * GENERIC REQUEST (The "Escape Hatch")
-	 * Permite realizar peticiones a cualquier endpoint de PlacetoPay.
-	 * Inyecta automáticamente el objeto 'auth' en el payload.
-	 * @param endpoint - Puede ser un path (api/session) o una URL completa.
-	 * @param payload - Cualquier objeto JSON.
-	 */
-	public async request<T = unknown>(
-		endpoint: string,
-		payload: Record<string, unknown> = {},
-	): Promise<T> {
-		return this.http.post<T>(endpoint, payload);
-	}
-}
+// --- 4. Services (Optional) ---
+export * from "./services/checkout";
+export * from "./services/gateway";
+export * from "./services/payment-link";
