@@ -13,7 +13,6 @@ describe("HttpClient", () => {
 
 	beforeEach(() => {
 		client = new HttpClient(config);
-		// Mockeamos el fetch global
 		vi.stubGlobal("fetch", vi.fn());
 	});
 
@@ -23,7 +22,6 @@ describe("HttpClient", () => {
 			status: { status: "OK", reason: "PC", message: "Success", date: "now" },
 		};
 
-		// Simulación de respuesta exitosa usando el constructor nativo de Response
 		vi.mocked(fetch).mockResolvedValue(
 			new Response(JSON.stringify(mockData), {
 				status: 200,
@@ -37,9 +35,8 @@ describe("HttpClient", () => {
 		const [url, options] = vi.mocked(fetch).mock.calls[0];
 		const body = JSON.parse(options?.body as string);
 
-		// Verificaciones
 		expect(url).toContain("https://api.test.com/test-path");
-		expect(body).toHaveProperty("auth"); // El interceptor hizo su trabajo
+		expect(body).toHaveProperty("auth");
 		expect(body.auth).toHaveProperty("login", config.login);
 		expect(body.reference).toBe("REF123");
 	});
@@ -54,7 +51,6 @@ describe("HttpClient", () => {
 			},
 		};
 
-		// Simulamos un error 401 que ofetch capturará
 		vi.mocked(fetch).mockResolvedValue(
 			new Response(JSON.stringify(errorResponse), {
 				status: 401,
@@ -63,7 +59,6 @@ describe("HttpClient", () => {
 			}),
 		);
 
-		// El interceptor onResponseError debería lanzar PlacetopayError
 		await expect(client.post("/fail", {})).rejects.toThrow(PlacetopayError);
 	});
 

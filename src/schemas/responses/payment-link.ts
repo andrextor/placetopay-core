@@ -6,7 +6,7 @@ import { StatusSchema } from "../common/status";
 export const CreatePaymentLinkResponseSchema = z.object({
 	status: StatusSchema,
 	id: z.union([z.string(), z.number()]).nullish(),
-	url: z.string().nullish(), // Eliminamos .url() estricto por si llega una ruta relativa o malformada
+	url: z.string().nullish(),
 });
 
 // --- Query Payment Link Response ---

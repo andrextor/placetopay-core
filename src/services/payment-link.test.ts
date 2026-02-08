@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { CreatePaymentLinkRequest } from "../schemas";
 import { StatusMock } from "../testing/status-mocks";
 import type { HttpClient } from "../utils/http-client";
 import { PaymentLinkService } from "./payment-link";
@@ -8,7 +9,6 @@ describe("PaymentLinkService", () => {
 	let service: PaymentLinkService;
 
 	beforeEach(() => {
-		// Mockeamos el HttpClient
 		mockHttpClient = {
 			post: vi.fn(),
 		} as unknown as HttpClient;
@@ -18,7 +18,6 @@ describe("PaymentLinkService", () => {
 
 	describe("create", () => {
 		it("should create a payment link and validate the response", async () => {
-			// Mock de respuesta exitosa
 			const mockResponse = {
 				status: StatusMock.ok(),
 				id: 12345,
@@ -39,21 +38,21 @@ describe("PaymentLinkService", () => {
 				isGeneric: false,
 			};
 
-			const result = await service.create(payload as any);
+			const result = await service.create(payload as CreatePaymentLinkRequest);
 
-			// Verificamos que llame al endpoint correcto
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"api/payment-link",
 				payload,
 			);
-			// Verificamos que el parse de respuesta funcionó
 			expect(result.id).toBe(12345);
 			expect(result.status.status).toBe("OK");
 		});
 
 		it("should throw validation error if payload is invalid", async () => {
-			const invalidPayload = { name: "" }; // Fallará por min(1)
-			await expect(service.create(invalidPayload as any)).rejects.toThrow();
+			const invalidPayload = { name: "" };
+			await expect(
+				service.create(invalidPayload as CreatePaymentLinkRequest),
+			).rejects.toThrow();
 		});
 	});
 
@@ -78,7 +77,6 @@ describe("PaymentLinkService", () => {
 
 			const result = await service.query(linkId);
 
-			// Verificamos que llame al endpoint con el ID y cuerpo vacío
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				`api/payment-link/${linkId}`,
 				{},
@@ -98,7 +96,7 @@ describe("PaymentLinkService", () => {
 
 			vi.mocked(mockHttpClient.post).mockResolvedValue(mockResponse);
 
-			const result = await service.disable(linkId);
+			const result = (await service.disable(linkId)) as typeof mockResponse;
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				`api/payment-link/disable/${linkId}`,

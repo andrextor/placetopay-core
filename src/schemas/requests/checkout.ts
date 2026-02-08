@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { AuthSchema } from "../common/auth";
 import { AutopayRequestSchema } from "../common/autopay";
 import { InstrumentSchema } from "../common/instrument";
 import { PaymentRequestSchema } from "../common/payment";

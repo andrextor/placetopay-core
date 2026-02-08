@@ -20,7 +20,7 @@ describe("AuthHelper (Functional)", () => {
 
 		// Verifica que la fecha sea válida
 		const parsedDate = Date.parse(auth.seed);
-		expect(isNaN(parsedDate)).toBe(false);
+		expect(Number.isNaN(parsedDate)).toBe(false);
 	});
 
 	it("should generate a tranKey that matches the Placetopay algorithm", () => {

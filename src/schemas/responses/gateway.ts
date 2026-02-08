@@ -9,7 +9,6 @@ export const GatewayInformationResponseSchema = z.object({
 	cardType: z.string().nullish(),
 	requireOtp: z.boolean().nullish(),
 	requireCvv2: z.boolean().nullish(),
-	// Usamos z.string() o una unión más flexible para evitar fallos si llega un valor nuevo
 	threeDS: z
 		.union([z.enum(["optional", "required", "unsupported"]), z.string()])
 		.nullish(),
@@ -26,7 +25,6 @@ export const GatewayInformationResponseSchema = z.object({
 // --- Unified Transaction Response (/process, /query, /collect) ---
 export const GatewayTransactionResponseSchema = z.object({
 	status: StatusSchema,
-	// PlacetoPay puede devolver IDs muy largos como string o number
 	internalReference: z.union([z.number(), z.string()]).nullish(),
 	reference: z.string().nullish(),
 	paymentMethod: z.string().nullish(),

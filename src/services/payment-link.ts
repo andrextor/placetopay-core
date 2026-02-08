@@ -46,7 +46,7 @@ export class PaymentLinkService extends BaseService {
 	/**
 	 * DISABLE: Desactiva un link antes de su expiración.
 	 */
-	async disable(linkId: string | number): Promise<any> {
+	async disable(linkId: string | number): Promise<unknown> {
 		const response = await this.http.post(
 			`api/payment-link/disable/${linkId}`,
 			{},

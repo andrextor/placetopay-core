@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { AuthSchema } from "../common/auth";
 import { InstrumentSchema } from "../common/instrument";
 import { PaymentRequestSchema } from "../common/payment";
 import { PersonSchema } from "../common/person";

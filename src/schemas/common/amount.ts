@@ -1,6 +1,4 @@
 import { z } from "zod";
-import { CurrencySchema } from "./currency";
-import { TaxSchema } from "./tax";
 
 export const AmountDetailSchema = z.object({
 	kind: z.string().describe("Detail type (e.g. shipping, tip)"),

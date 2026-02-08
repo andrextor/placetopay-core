@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { CollectRequest, CreateSessionRequest } from "../schemas";
 import { CheckoutMock } from "../testing/checkout-mocks";
 import type { HttpClient } from "../utils/http-client";
 import { CheckoutService } from "./checkout";
@@ -18,11 +19,9 @@ describe("CheckoutService", () => {
 
 	describe("createSession", () => {
 		it("should call /api/session and return a successful mock response", async () => {
-			// 1. Preparamos el Mock de respuesta usando nuestra factoría
 			const mockResponse = CheckoutMock.createSession({ requestId: 777 });
 			vi.mocked(mockHttpClient.post).mockResolvedValue(mockResponse);
 
-			// 2. Payload válido según el esquema
 			const payload = {
 				payment: {
 					reference: "TEST_1",
@@ -34,16 +33,19 @@ describe("CheckoutService", () => {
 				userAgent: "ViteTest",
 			};
 
-			const result = await service.createSession(payload as any);
+			const result = await service.createSession(
+				payload as CreateSessionRequest,
+			);
 
-			// 3. Verificaciones
 			expect(mockHttpClient.post).toHaveBeenCalledWith("/api/session", payload);
 			expect(result.requestId).toBe(777);
 			expect(result.status.status).toBe("OK");
 		});
 
 		it("should throw a validation error if payload is empty", async () => {
-			await expect(service.createSession({} as any)).rejects.toThrow();
+			await expect(
+				service.createSession({} as unknown as CreateSessionRequest),
+			).rejects.toThrow();
 		});
 
 		it("should skip validation when options.raw is true", async () => {
@@ -52,8 +54,10 @@ describe("CheckoutService", () => {
 				CheckoutMock.createSession(),
 			);
 
-			// No debería fallar aunque el payload no cumpla el esquema de Zod
-			await service.createSession(weirdPayload as any, { raw: true });
+			await service.createSession(
+				weirdPayload as unknown as CreateSessionRequest,
+				{ raw: true },
+			);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"/api/session",
@@ -99,7 +103,7 @@ describe("CheckoutService", () => {
 				instrument: { token: { token: "TOKEN123" } },
 			};
 
-			const result = await service.collect(payload as any);
+			const result = await service.collect(payload as CollectRequest);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"/api/collect",

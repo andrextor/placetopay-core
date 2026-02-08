@@ -8,13 +8,11 @@ import { StatusMock } from "./status-mocks";
  * Factory for Gateway service mocks.
  * Useful for simulating direct card processing, queries, and bank list information.
  */
-export class GatewayMock {
+export const GatewayMock = {
 	/**
 	 * Generates a mock for a transaction response (process, query, or collect).
-	 * * @param status - The transaction state: APPROVED, REJECTED, or PENDING.
-	 * @param overrides - Optional fields to customize the response.
 	 */
-	static transaction(
+	transaction(
 		status: "APPROVED" | "REJECTED" | "PENDING" = "APPROVED",
 		overrides?: Partial<GatewayTransactionResponse>,
 	): GatewayTransactionResponse {
@@ -29,7 +27,7 @@ export class GatewayMock {
 				reason: isApproved ? "00" : "1",
 			}),
 			internalReference: Math.floor(Math.random() * 1000000),
-			reference: "ORDER-" + Math.floor(Math.random() * 9999),
+			reference: `ORDER-"${Math.floor(Math.random() * 9999)}`,
 			paymentMethod: "visa",
 			franchise: "VS",
 			franchiseName: "Visa",
@@ -37,6 +35,8 @@ export class GatewayMock {
 			amount: {
 				currency: "COP",
 				total: 50000,
+				taxes: [],
+				details: [],
 			},
 			authorization: isApproved ? "000000" : null,
 			receipt: isApproved ? "12345678" : null,
@@ -50,13 +50,12 @@ export class GatewayMock {
 			},
 			...overrides,
 		} as GatewayTransactionResponse;
-	}
+	},
 
 	/**
 	 * Generates a mock for the information endpoint (/gateway/information).
-	 * Useful for testing UI components like bank selectors or security flags.
 	 */
-	static information(
+	information(
 		overrides?: Partial<GatewayInformationResponse>,
 	): GatewayInformationResponse {
 		return {
@@ -76,18 +75,18 @@ export class GatewayMock {
 			],
 			...overrides,
 		} as GatewayInformationResponse;
-	}
+	},
 
 	/**
 	 * Helper for specific failed transactions (e.g., Insufficient funds)
 	 */
-	static rejected(
+	rejected(
 		message: string = "Fondos insuficientes",
 		overrides?: Partial<GatewayTransactionResponse>,
 	): GatewayTransactionResponse {
-		return GatewayMock.transaction("REJECTED", {
+		return this.transaction("REJECTED", {
 			status: StatusMock.ok({ status: "REJECTED", message, reason: "51" }),
 			...overrides,
 		});
-	}
-}
+	},
+} as const;

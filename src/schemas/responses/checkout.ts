@@ -1,22 +1,18 @@
 import { z } from "zod";
-import { NameValuePairSchema } from "../common/fields";
 import { PaymentRequestSchema } from "../common/payment";
 import { PersonSchema } from "../common/person";
 import { StatusSchema } from "../common/status";
-// Importación corregida si es necesario
-// import { SubscriptionRequestSchema } from "../common/subscription"
 
 // --- A. Create Session Response ---
 export const CreateSessionResponseSchema = z.object({
 	status: StatusSchema,
-	requestId: z.number().nullish(), // Más flexible
-	processUrl: z.string().nullish(), // A veces no hay URL si falla la creación
+	requestId: z.number().nullish(),
+	processUrl: z.string().nullish(),
 });
 
 // --- B. Transaction Response (Detalle del pago) ---
 export const TransactionResponseSchema = z.object({
 	status: StatusSchema,
-	// PlacetoPay a veces devuelve esto como string en ciertos microservicios
 	internalReference: z.union([z.number(), z.string()]).nullish(),
 	paymentMethod: z.string().nullish(),
 	paymentMethodName: z.string().nullish(),
@@ -27,13 +23,12 @@ export const TransactionResponseSchema = z.object({
 			to: z.object({ currency: z.string(), total: z.number() }),
 			factor: z.number(),
 		})
-		.nullish(), // Permite null o undefined
+		.nullish(),
 	authorization: z.string().nullish(),
 	reference: z.string().nullish(),
 	receipt: z.string().nullish(),
 	franchise: z.string().nullish(),
 	refunded: z.boolean().default(false).nullish(),
-	// NameValuePairSchema puede ser estricto, mejor permitir que sea opcional
 	processorFields: z.array(z.any()).nullish(),
 });
 
@@ -53,7 +48,7 @@ export const RedirectInformationSchema = z.object({
 			userAgent: z.string().nullish(),
 			expiration: z.string().nullish(),
 		})
-		.nullish(), // Toda la información del request original podría faltar
+		.nullish(),
 	payment: z.array(TransactionResponseSchema).nullish(),
 	subscription: z.any().nullish(),
 });
@@ -64,7 +59,7 @@ export const RedirectInformationSchema = z.object({
 export const CollectResponseSchema = z.object({
 	requestId: z.number().nullish(),
 	status: StatusSchema,
-	request: z.any().nullish(), // Muy flexible para evitar roturas
+	request: z.any().nullish(),
 	payment: z.array(TransactionResponseSchema).nullish(),
 	subscription: z.any().nullish(),
 });

@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type {
+	GatewayInformationRequest,
+	GatewayProcessRequest,
+	GatewayQueryRequest,
+} from "../schemas";
 import { GatewayMock } from "../testing/gateway-mocks";
 import type { HttpClient } from "../utils/http-client";
 import { GatewayService } from "./gateway";
@@ -27,7 +32,9 @@ describe("GatewayService", () => {
 				},
 			};
 
-			const result = await service.information(payload as any);
+			const result = await service.information(
+				payload as GatewayInformationRequest,
+			);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"/gateway/information",
@@ -58,7 +65,7 @@ describe("GatewayService", () => {
 				},
 			};
 
-			const result = await service.process(payload as any);
+			const result = await service.process(payload as GatewayProcessRequest);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"/gateway/process",
@@ -74,7 +81,9 @@ describe("GatewayService", () => {
 				GatewayMock.transaction(),
 			);
 
-			await service.process(weirdPayload as any, { raw: true });
+			await service.process(weirdPayload as unknown as GatewayProcessRequest, {
+				raw: true,
+			});
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"/gateway/process",
@@ -85,7 +94,6 @@ describe("GatewayService", () => {
 
 	describe("query", () => {
 		it("should query transaction status and handle null fields correctly", async () => {
-			// Simulamos una respuesta de consulta rechazada (que suele traer campos nulos)
 			const mockResponse = GatewayMock.transaction("REJECTED", {
 				authorization: null,
 				receipt: null,
@@ -96,7 +104,7 @@ describe("GatewayService", () => {
 				internalReference: 123456,
 			};
 
-			const result = await service.query(payload as any);
+			const result = await service.query(payload as GatewayQueryRequest);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"/gateway/query",

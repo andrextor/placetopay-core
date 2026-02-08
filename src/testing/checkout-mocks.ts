@@ -5,11 +5,15 @@ import type {
 } from "../schemas";
 import { StatusMock } from "./status-mocks";
 
-export class CheckoutMock {
+/**
+ * Factory for Checkout service mocks.
+ * Useful for simulating WebCheckout sessions, session queries, and automated collections.
+ */
+export const CheckoutMock = {
 	/**
-	 * Simula la respuesta de creación de sesión (WebCheckout)
+	 * Simulates the response for session creation (WebCheckout)
 	 */
-	static createSession(
+	createSession(
 		overrides?: Partial<CreateSessionResponse>,
 	): CreateSessionResponse {
 		return {
@@ -18,12 +22,12 @@ export class CheckoutMock {
 			processUrl: "https://checkout.placetopay.com/session/1/abcde",
 			...overrides,
 		};
-	}
+	},
 
 	/**
-	 * Simula la respuesta de consulta de sesión (GetSession)
+	 * Simulates the response for a session query (GetSession)
 	 */
-	static getSession(
+	getSession(
 		status: "APPROVED" | "REJECTED" | "PENDING" = "APPROVED",
 		overrides?: Partial<RedirectInformation>,
 	): RedirectInformation {
@@ -37,18 +41,18 @@ export class CheckoutMock {
 						: "La petición ha sido declinada",
 			}),
 			request: {
-				locale: "es_CO", // Requerido por Zod
+				locale: "es_CO",
 				payment: {
 					reference: "ORDER_123",
 					description: "Pago de prueba",
 					amount: {
 						currency: "COP",
 						total: 50000,
-						taxes: [], // Requerido por Zod
-						details: [], // Requerido por Zod
+						taxes: [],
+						details: [],
 					},
 				},
-				expiration: new Date(Date.now() + 3600000).toISOString(), // Requerido por Zod
+				expiration: new Date(Date.now() + 3600000).toISOString(),
 				returnUrl: "https://mysite.com/response",
 				ipAddress: "127.0.0.1",
 				userAgent: "PlacetoPay SDK Mock",
@@ -59,7 +63,7 @@ export class CheckoutMock {
 					: [
 							{
 								status: StatusMock.ok({ status: status }),
-								internalReference: 987654, // Debe ser NUMBER para Zod
+								internalReference: 987654,
 								paymentMethod: "visa",
 								amount: {
 									from: { currency: "COP", total: 50000 },
@@ -76,12 +80,12 @@ export class CheckoutMock {
 						],
 			...overrides,
 		} as RedirectInformation;
-	}
+	},
 
 	/**
-	 * Simula la respuesta de un cobro automático (Collect)
+	 * Simulates the response for an automated collection (Collect)
 	 */
-	static collect(overrides?: Partial<CollectResponse>): CollectResponse {
+	collect(overrides?: Partial<CollectResponse>): CollectResponse {
 		return {
 			status: StatusMock.ok({ status: "APPROVED" }),
 			requestId: Math.floor(Math.random() * 1000000),
@@ -90,7 +94,7 @@ export class CheckoutMock {
 			payment: [
 				{
 					status: StatusMock.ok({ status: "APPROVED" }),
-					internalReference: 123123, // Debe ser NUMBER
+					internalReference: 123123,
 					paymentMethod: "visa",
 					amount: {
 						from: { currency: "COP", total: 10000 },
@@ -106,5 +110,5 @@ export class CheckoutMock {
 			],
 			...overrides,
 		} as CollectResponse;
-	}
-}
+	},
+} as const;
