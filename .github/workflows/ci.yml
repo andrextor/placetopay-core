@@ -30,7 +30,15 @@ jobs:
       - name: Run ${{ matrix.command }}
         run: |
           if [ "${{ matrix.command }}" = "test" ]; then
-           npm run test:coverage
+            npm run test:coverage
           else
             npm run ${{ matrix.command }}
           fi
+
+      - name: Upload results to Codecov
+        if: matrix.command == 'test' && !cancelled()
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info,./test-report.junit.xml
+          fail_ci_if_error: true
