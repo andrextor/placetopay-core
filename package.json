@@ -15,8 +15,8 @@
 		"build": "tsup",
 		"dev": "tsup --watch",
 		"test": "vitest",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
+		"test:run": "vitest run",
+		"test:coverage": "vitest run --coverage",
 		"check": "biome check .",
 		"check:apply": "biome check --write .",
 		"format": "biome format --write ."
