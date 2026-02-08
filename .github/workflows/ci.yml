@@ -30,7 +30,7 @@ jobs:
       - name: Run ${{ matrix.command }}
         run: |
           if [ "${{ matrix.command }}" = "test" ]; then
-            npm run test -- --run
+           npm run test:coverage
           else
             npm run ${{ matrix.command }}
           fi
