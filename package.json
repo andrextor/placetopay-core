@@ -1,14 +1,41 @@
 {
-	"name": "placetopay-core",
+	"name": "@andrextor_ia11012/placetopay-core",
 	"version": "1.0.0",
+	"description": "A lightweight, type-safe SDK for seamless integration with Placetopay services.",
+	"type": "module",
+	"author": "Iván Andrés López. <ialopez11012@gmail.com>",
+	"license": "MIT",
+	"homepage": "https://github.com/andrextor/placetopay-core/blob/main/README.md",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/andrextor/placetopay-core.git"
+	},
+	"bugs": {
+		"url": "https://github.com/andrextor/placetopay-core/issues"
+	},
+	"keywords": [
+		"placetopay",
+		"payments",
+		"sdk",
+		"typescript",
+		"gateway",
+		"colombia",
+		"checkout"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"dist"
+	],
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
-			"require": "./dist/index.js",
-			"import": "./dist/index.mjs"
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
 		}
 	},
 	"scripts": {
@@ -19,7 +46,9 @@
 		"test:coverage": "vitest run --coverage",
 		"check": "biome check .",
 		"check:apply": "biome check --write .",
-		"format": "biome format --write ."
+		"format": "biome format --write .",
+		"lint": "biome lint .",
+		"prepublishOnly": "npm run build && npm run test:run"
 	},
 	"dependencies": {
 		"ofetch": "^1.5.1",
@@ -32,5 +61,8 @@
 		"tsup": "^8.5.1",
 		"typescript": "^5.9.3",
 		"vitest": "^4.0.18"
+	},
+	"engines": {
+		"node": ">=20.0.0"
 	}
 }
