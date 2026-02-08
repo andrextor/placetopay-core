@@ -1,0 +1,24 @@
+# Dependencias
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log*
+
+# Compilación (Lo que genera tsup)
+dist/
+build/
+*.tsbuildinfo
+
+# Entorno y Seguridad (NUNCA subir esto)
+.env
+.env.local
+.env.*.local
+
+# IDEs y Sistema Operativo
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Testing
+coverage/
