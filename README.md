@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/badge/npm-1.0.0-blue.svg)](https://www.npmjs.com/)
 [![codecov](https://codecov.io/github/andrextor/placetopay-core/graph/badge.svg?token=0WPaKifYNy)](https://codecov.io/github/andrextor/placetopay-core)
-[![Build Status](https://github.com/andrextor/placetopay-core/actions/workflows/p2p-core.yml/badge.svg)](https://github.com/andrextor/placetopay-core/actions)
+[![CI](https://github.com/andrextor/placetopay-core/actions/workflows/p2p-core.yml/badge.svg?branch=main)](https://github.com/andrextor/placetopay-core/actions/workflows/p2p-core.yml)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![typescript](https://img.shields.io/badge/typescript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 
