@@ -8,7 +8,7 @@ import { RecurringSchema } from "./recurring";
 export const PaymentRequestSchema = z.object({
 	reference: z.string().max(64).describe("Unique payment reference"),
 	description: z.string().min(1).max(250).nullish().optional(),
-	amount: AmountSchema.required(),
+	amount: AmountSchema,
 	allowPartial: z.boolean().optional(),
 	shipping: PersonSchema.optional(),
 	items: z.array(ItemSchema).optional(),

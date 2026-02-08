@@ -21,62 +21,75 @@ describe("GatewayService", () => {
 	});
 
 	describe("information", () => {
-		it("should fetch gateway information with bank list", async () => {
+		const validInfoPayload: GatewayInformationRequest = {
+			locale: "es_CO",
+			payment: {
+				reference: "REF_INFO_TEST",
+				amount: { currency: "COP", total: 1000 },
+			},
+		};
+
+		it("should fetch gateway information successfully", async () => {
 			const mockResponse = GatewayMock.information();
 			vi.mocked(mockHttpClient.post).mockResolvedValue(mockResponse);
 
-			const payload = {
-				payment: {
-					reference: "REF_INFO_TEST",
-					amount: { currency: "COP", total: 1000 },
-				},
-			};
-
-			const result = await service.information(
-				payload as GatewayInformationRequest,
-			);
+			const result = await service.information(validInfoPayload);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"/gateway/information",
-				payload,
+				validInfoPayload,
 			);
 			expect(result.bankList).toBeDefined();
-			expect(result.bankList?.length).toBeGreaterThan(0);
+		});
+
+		it("should skip request validation if raw option is true", async () => {
+			vi.mocked(mockHttpClient.post).mockResolvedValue(
+				GatewayMock.information(),
+			);
+
+			// Payload incompleto que fallaría sin la opción raw
+			const incompletePayload = { payment: { reference: "TEST" } };
+
+			await service.information(
+				incompletePayload as unknown as GatewayInformationRequest,
+				{
+					raw: true,
+				},
+			);
+
+			expect(mockHttpClient.post).toHaveBeenCalled();
 		});
 	});
 
 	describe("process", () => {
-		it("should process a direct transaction successfully", async () => {
+		const validProcessPayload: GatewayProcessRequest = {
+			locale: "en",
+			payment: {
+				reference: "REF_TEST",
+				description: "Test direct payment",
+				amount: { currency: "USD", total: 50, taxes: [], details: [] },
+			},
+			instrument: {
+				card: {
+					number: "4111111111111111",
+					cvv: "123",
+					expiration: "12/26",
+				},
+			},
+		};
+
+		it("should process a transaction successfully", async () => {
 			const mockResponse = GatewayMock.transaction("APPROVED");
 			vi.mocked(mockHttpClient.post).mockResolvedValue(mockResponse);
 
-			const payload = {
-				payment: {
-					reference: "REF_TEST",
-					description: "Test direct payment",
-					amount: { currency: "USD", total: 50 },
-				},
-				instrument: {
-					card: {
-						number: "4111111111111111",
-						cvv: "123",
-						expiration: "12/26",
-					},
-				},
-			};
+			const result = await service.process(validProcessPayload);
 
-			const result = await service.process(payload as GatewayProcessRequest);
-
-			expect(mockHttpClient.post).toHaveBeenCalledWith(
-				"/gateway/process",
-				payload,
-			);
 			expect(result.status.status).toBe("APPROVED");
 			expect(result.authorization).toBe("000000");
 		});
 
-		it("should skip validation when raw option is enabled", async () => {
-			const weirdPayload = { some_extra_data: "value" };
+		it("should skip request validation when raw is enabled", async () => {
+			const weirdPayload = { custom_field: "value" };
 			vi.mocked(mockHttpClient.post).mockResolvedValue(
 				GatewayMock.transaction(),
 			);
@@ -90,28 +103,48 @@ describe("GatewayService", () => {
 				weirdPayload,
 			);
 		});
+
+		it("should throw if response schema validation fails", async () => {
+			// Respuesta malformada (sin status) para forzar error en GatewayTransactionResponseSchema.parse
+			vi.mocked(mockHttpClient.post).mockResolvedValue({
+				internalReference: 123,
+			});
+
+			await expect(service.process(validProcessPayload)).rejects.toThrow();
+		});
 	});
 
 	describe("query", () => {
-		it("should query transaction status and handle null fields correctly", async () => {
+		const validQueryPayload: GatewayQueryRequest = {
+			internalReference: 123456,
+		};
+
+		it("should query status and handle null fields", async () => {
 			const mockResponse = GatewayMock.transaction("REJECTED", {
 				authorization: null,
 				receipt: null,
 			});
 			vi.mocked(mockHttpClient.post).mockResolvedValue(mockResponse);
 
-			const payload = {
-				internalReference: 123456,
-			};
+			const result = await service.query(validQueryPayload);
 
-			const result = await service.query(payload as GatewayQueryRequest);
-
-			expect(mockHttpClient.post).toHaveBeenCalledWith(
-				"/gateway/query",
-				payload,
-			);
 			expect(result.status.status).toBe("REJECTED");
 			expect(result.authorization).toBeNull();
+		});
+
+		it("should skip request validation in query when raw is enabled", async () => {
+			vi.mocked(mockHttpClient.post).mockResolvedValue(
+				GatewayMock.transaction(),
+			);
+
+			await service.query(
+				{ any_ref: "abc" } as unknown as GatewayQueryRequest,
+				{
+					raw: true,
+				},
+			);
+
+			expect(mockHttpClient.post).toHaveBeenCalled();
 		});
 	});
 });

@@ -8,8 +8,8 @@ export const AmountDetailSchema = z.object({
 export const AmountSchema = z.object({
 	currency: z.string().default("USD"),
 	total: z.number().default(0),
-	taxes: z.array(z.any()).nullish().default([]),
-	details: z.array(z.any()).nullish().default([]),
+	taxes: z.array(z.any()).nullish(),
+	details: z.array(z.any()).nullish(),
 });
 
 export type Amount = z.infer<typeof AmountSchema>;

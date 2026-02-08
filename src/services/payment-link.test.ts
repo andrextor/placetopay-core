@@ -7,6 +7,23 @@ import { PaymentLinkService } from "./payment-link";
 describe("PaymentLinkService", () => {
 	let mockHttpClient: HttpClient;
 	let service: PaymentLinkService;
+	const validPayload: CreatePaymentLinkRequest = {
+		name: "Producto Test",
+		description: "Descripción de prueba",
+		reference: "REF-123",
+		expirationDate: "2026-12-31 23:59:59",
+		paymentExpiration: 60,
+		payment: {
+			amount: {
+				currency: "COP",
+				total: 50000,
+				taxes: [],
+				details: [],
+			},
+		},
+		locale: "es",
+		isGeneric: false,
+	};
 
 	beforeEach(() => {
 		mockHttpClient = {
@@ -25,24 +42,11 @@ describe("PaymentLinkService", () => {
 			};
 			vi.mocked(mockHttpClient.post).mockResolvedValue(mockResponse);
 
-			const payload = {
-				name: "Producto Test",
-				description: "Descripción de prueba",
-				reference: "REF-123",
-				expirationDate: "2026-12-31 23:59:59",
-				paymentExpiration: 60,
-				payment: {
-					amount: { currency: "COP", total: 50000, taxes: [], details: [] },
-				},
-				locale: "es" as const,
-				isGeneric: false,
-			};
-
-			const result = await service.create(payload as CreatePaymentLinkRequest);
+			const result = await service.create(validPayload);
 
 			expect(mockHttpClient.post).toHaveBeenCalledWith(
 				"api/payment-link",
-				payload,
+				validPayload,
 			);
 			expect(result.id).toBe(12345);
 			expect(result.status.status).toBe("OK");
@@ -52,6 +56,39 @@ describe("PaymentLinkService", () => {
 			const invalidPayload = { name: "" };
 			await expect(
 				service.create(invalidPayload as CreatePaymentLinkRequest),
+			).rejects.toThrow();
+		});
+
+		it("should create successfully", async () => {
+			vi.mocked(mockHttpClient.post).mockResolvedValue({
+				status: StatusMock.ok(),
+				id: 1,
+			});
+			const result = await service.create(
+				validPayload as CreatePaymentLinkRequest,
+			);
+			expect(result.id).toBe(1);
+		});
+
+		it("should skip validation when raw option is enabled", async () => {
+			vi.mocked(mockHttpClient.post).mockResolvedValue({
+				status: StatusMock.ok(),
+				id: 1,
+			});
+
+			await service.create(
+				{ name: "" } as unknown as CreatePaymentLinkRequest,
+				{ raw: true },
+			);
+			expect(mockHttpClient.post).toHaveBeenCalled();
+		});
+
+		it("should throw if response doesn't match schema", async () => {
+			vi.mocked(mockHttpClient.post).mockResolvedValue({
+				id: "not-an-object-with-status",
+			});
+			await expect(
+				service.create(validPayload as unknown as CreatePaymentLinkRequest),
 			).rejects.toThrow();
 		});
 	});
@@ -84,6 +121,15 @@ describe("PaymentLinkService", () => {
 			expect(result.status).toBe("ACTIVE");
 			expect(result.id).toBe(98765);
 		});
+
+		it("should return raw response if raw option is true", async () => {
+			const rawData = { some: "unvalidated-data" };
+			vi.mocked(mockHttpClient.post).mockResolvedValue(rawData);
+
+			// Cubre la rama del return en query
+			const result = await service.query(123, { raw: true });
+			expect(result).toEqual(rawData);
+		});
 	});
 
 	describe("disable", () => {
@@ -104,6 +150,18 @@ describe("PaymentLinkService", () => {
 			);
 			expect(result.id).toBe(linkId);
 			expect(result.status.status).toBe("OK");
+		});
+
+		it("should call disable endpoint", async () => {
+			vi.mocked(mockHttpClient.post).mockResolvedValue({
+				status: StatusMock.ok(),
+			});
+
+			await service.disable(555);
+			expect(mockHttpClient.post).toHaveBeenCalledWith(
+				"api/payment-link/disable/555",
+				{},
+			);
 		});
 	});
 });

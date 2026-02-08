@@ -16,50 +16,77 @@ describe("HttpClient", () => {
 		vi.stubGlobal("fetch", vi.fn());
 	});
 
-	it("should inject auth object via onRequest interceptor", async () => {
-		const mockData = {
-			requestId: 1,
-			status: { status: "OK", reason: "PC", message: "Success", date: "now" },
-		};
-
+	it("should clean trailing slash from baseUrl and leading slash from endpoint", async () => {
 		vi.mocked(fetch).mockResolvedValue(
-			new Response(JSON.stringify(mockData), {
-				status: 200,
-				headers: { "Content-Type": "application/json" },
-			}),
+			new Response(JSON.stringify({ ok: true }), { status: 200 }),
 		);
 
-		const payload = { reference: "REF123" };
-		await client.post("/test-path", payload);
+		await client.post("/test-path", { foo: "bar" });
 
-		const [url, options] = vi.mocked(fetch).mock.calls[0];
+		const [url] = vi.mocked(fetch).mock.calls[0];
+
+		expect(url).toBe("https://api.test.com/test-path");
+	});
+
+	it("should inject auth object via onRequest interceptor", async () => {
+		vi.mocked(fetch).mockResolvedValue(
+			new Response(JSON.stringify({ ok: true }), { status: 200 }),
+		);
+
+		await client.post("test", { reference: "REF123" });
+
+		const [, options] = vi.mocked(fetch).mock.calls[0];
 		const body = JSON.parse(options?.body as string);
 
-		expect(url).toContain("https://api.test.com/test-path");
 		expect(body).toHaveProperty("auth");
 		expect(body.auth).toHaveProperty("login", config.login);
+		expect(body.auth).toHaveProperty("tranKey");
 		expect(body.reference).toBe("REF123");
 	});
 
-	it("should throw PlacetopayError when API returns a FAILED status object", async () => {
+	it("should throw PlacetopayError when API returns a valid status object", async () => {
 		const errorResponse = {
 			status: {
 				status: "FAILED",
 				reason: "401",
 				message: "Invalid credentials",
-				date: "2026-01-01T00:00:00Z",
+				date: new Date().toISOString(),
 			},
 		};
 
 		vi.mocked(fetch).mockResolvedValue(
 			new Response(JSON.stringify(errorResponse), {
 				status: 401,
-				statusText: "Unauthorized",
 				headers: { "Content-Type": "application/json" },
 			}),
 		);
 
-		await expect(client.post("/fail", {})).rejects.toThrow(PlacetopayError);
+		try {
+			await client.post("/fail", {});
+			expect.fail("Should have thrown PlacetopayError");
+		} catch (error: unknown) {
+			expect(error).toBeInstanceOf(PlacetopayError);
+
+			if (error instanceof PlacetopayError) {
+				expect(error.reason).toBe("401");
+				expect(error.status).toBe("FAILED");
+				expect(error.message).toBe("Invalid credentials");
+			}
+		}
+	});
+
+	it("should throw generic error when response has data but status is invalid", async () => {
+		const weirdResponse = { status: { something: "wrong" } };
+
+		vi.mocked(fetch).mockResolvedValue(
+			new Response(JSON.stringify(weirdResponse), {
+				status: 400,
+				statusText: "Bad Request",
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+
+		await expect(client.post("/bad-json", {})).rejects.toThrow(/HTTP 400/);
 	});
 
 	it("should throw a descriptive error for non-Placetopay failures (500)", async () => {
@@ -70,6 +97,8 @@ describe("HttpClient", () => {
 			}),
 		);
 
-		await expect(client.post("/crash", {})).rejects.toThrow(/HTTP 500/);
+		await expect(client.post("/crash", {})).rejects.toThrow(
+			/HTTP 500: Internal Server Error/,
+		);
 	});
 });
