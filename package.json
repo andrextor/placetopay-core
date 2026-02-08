@@ -1,5 +1,5 @@
 {
-	"name": "@andrextor_ia11012/placetopay-core",
+	"name": "@andrextor/placetopay-core",
 	"version": "1.0.0",
 	"description": "A lightweight, type-safe SDK for seamless integration with Placetopay services.",
 	"type": "module",
