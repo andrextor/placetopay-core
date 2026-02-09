@@ -23,6 +23,12 @@ export class HttpClient {
 
 			async onRequest({ options }) {
 				const auth = await generateAuth(config.login, config.secretKey);
+
+				let body = options.body;
+				if (typeof body === 'string') {
+					try { body = JSON.parse(body); } catch (e) { }
+				}
+
 				options.body = {
 					auth,
 					...(options.body as object),
