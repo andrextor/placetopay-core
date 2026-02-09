@@ -1,6 +1,42 @@
 import type { PlacetopayAuth } from "../schemas";
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
+/**
+ * Genera el objeto de autenticación para Placetopay
+ * Fórmula: tranKey = Base64(SHA-256(nonce + seed + secretKey))
+ */
+export async function generateAuth(
+	login: string,
+	secretKey: string,
+): Promise<PlacetopayAuth> {
+	const nonceValues = new Uint8Array(16);
+	crypto.getRandomValues(nonceValues);
+
+	const nonceBase64 = arrayBufferToBase64(nonceValues);
+
+	// 2. Generar Seed (Fecha ISO 8601 actual)
+	const seed = new Date().toISOString();
+
+	const rawNonce = getRandomString(16);
+	const nonceToSend = btoa(rawNonce);
+
+	const msg = rawNonce + seed + secretKey;
+
+	const encoder = new TextEncoder();
+	const data = encoder.encode(msg);
+	const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+	// 5. Convertir el hash a Base64
+	const tranKey = arrayBufferToBase64(hashBuffer);
+
+	return {
+		login,
+		tranKey,
+		nonce: nonceToSend,
+		seed,
+	};
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
 	let binary = "";
 	const bytes = new Uint8Array(buffer);
 	const len = bytes.byteLength;
@@ -10,46 +46,10 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 	return btoa(binary);
 }
 
-/**
- * Genera una cadena hexadecimal aleatoria de forma segura
- */
-function getRandomHex(length: number): string {
+function getRandomString(length: number): string {
 	const array = new Uint8Array(length);
-	const cryptoObj = globalThis.crypto;
-
-	if (!cryptoObj) {
-		throw new Error(
-			"Web Crypto API not available. Use Node.js 19+ or a polyfill.",
-		);
-	}
-
-	cryptoObj.getRandomValues(array);
+	crypto.getRandomValues(array);
 	return Array.from(array)
 		.map((b) => b.toString(16).padStart(2, "0"))
 		.join("");
-}
-
-/**
- * Generates a fresh set of authentication credentials using Web Crypto API.
- * Compatible with Browser and Node.js.
- */
-export async function generateAuth(
-	login: string,
-	secretKey: string,
-): Promise<PlacetopayAuth> {
-	const seed = new Date().toISOString();
-	const rawNonce = getRandomHex(16);
-	const nonce = btoa(rawNonce);
-	const msg = rawNonce + seed + secretKey;
-	const encoder = new TextEncoder();
-	const data = encoder.encode(msg);
-	const hashBuffer = await globalThis.crypto.subtle.digest("SHA-1", data);
-	const tranKey = arrayBufferToBase64(hashBuffer);
-
-	return {
-		login,
-		tranKey,
-		nonce,
-		seed,
-	};
 }

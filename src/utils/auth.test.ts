@@ -33,7 +33,7 @@ describe("AuthHelper (Functional)", () => {
 		const rawNonce = Buffer.from(auth.nonce, "base64").toString("utf8");
 
 		// 2. Re-calcular el hash
-		const expectedTranKey = createHash("sha1")
+		const expectedTranKey = createHash("sha256")
 			.update(rawNonce + auth.seed + secretKey)
 			.digest("base64");
 

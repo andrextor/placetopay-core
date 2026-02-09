@@ -1,4 +1,5 @@
 import { type $Fetch, ofetch } from "ofetch";
+import type { MethodOptions } from "@/services/base";
 import { StatusSchema } from "../schemas";
 import { generateAuth } from "./auth";
 import { PlacetopayError } from "./errors";
@@ -25,8 +26,10 @@ export class HttpClient {
 				const auth = await generateAuth(config.login, config.secretKey);
 
 				let body = options.body;
-				if (typeof body === 'string') {
-					try { body = JSON.parse(body); } catch (e) { }
+				if (typeof body === "string") {
+					try {
+						body = JSON.parse(body);
+					} catch (e) {}
 				}
 
 				options.body = {
@@ -55,12 +58,14 @@ export class HttpClient {
 	public async post<T>(
 		endpoint: string,
 		payload: Record<string, unknown> = {},
+		options: MethodOptions = {},
 	): Promise<T> {
 		const path = endpoint.replace(/^\//, "");
 
 		return this.api<T>(path, {
 			method: "POST",
 			body: payload,
+			headers: options.headers,
 		});
 	}
 }

@@ -1,3 +1,4 @@
+import type { MethodOptions } from "./services/base";
 import { CheckoutService } from "./services/checkout";
 import { GatewayService } from "./services/gateway";
 import { PaymentLinkService } from "./services/payment-link";
@@ -33,16 +34,13 @@ export class Placetopay {
 	}
 
 	/**
-	 * GENERIC REQUEST (The "Escape Hatch")
-	 * Permite realizar peticiones a cualquier endpoint de PlacetoPay.
-	 * Inyecta automáticamente el objeto 'auth' en el payload.
-	 * @param endpoint - Puede ser un path (api/session) o una URL completa.
 	 * @param payload - Cualquier objeto JSON.
 	 */
 	public async request<T = unknown>(
 		endpoint: string,
 		payload: Record<string, unknown> = {},
+		options: MethodOptions = {},
 	): Promise<T> {
-		return this.http.post<T>(endpoint, payload);
+		return this.http.post<T>(endpoint, payload, options);
 	}
 }
