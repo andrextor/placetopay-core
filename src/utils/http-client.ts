@@ -22,7 +22,7 @@ export class HttpClient {
 			retryStatusCodes: [408, 429, 500, 502, 503, 504],
 
 			async onRequest({ options }) {
-				const auth = generateAuth(config.login, config.secretKey);
+				const auth = await generateAuth(config.login, config.secretKey);
 				options.body = {
 					auth,
 					...(options.body as object),
